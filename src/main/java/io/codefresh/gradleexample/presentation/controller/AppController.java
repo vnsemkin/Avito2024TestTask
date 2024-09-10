@@ -1,6 +1,7 @@
 package io.codefresh.gradleexample.presentation.controller;
 
 import io.codefresh.gradleexample.application.config.TenderServiceType;
+import io.codefresh.gradleexample.application.mappers.TenderMapper;
 import io.codefresh.gradleexample.domain.model.TenderReq;
 import io.codefresh.gradleexample.domain.service.TenderService;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
@@ -51,7 +52,8 @@ public class AppController {
         TenderReq tenderReq = new TenderReq(limit, offset, serviceType, SORT_FIELD, SORT_DIRECTION);
 
         List<Tender> tenders = tenderService.getTenders(tenderReq);
-        return tenders == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(tenders);
+        return tenders == null ? ResponseEntity.noContent().build() :
+                ResponseEntity.ok(TenderMapper.toTenderDtoList(tenders));
     }
 }
 

@@ -22,6 +22,8 @@ public class Tender {
     @Column(nullable = false)
     private String status;
     @Column(nullable = false)
+    private String organizationId;
+    @Column(nullable = false)
     private String serviceType;
     @Column(nullable = false)
     private int version;

@@ -28,22 +28,23 @@ CREATE TABLE IF NOT EXISTS organization
 );
 
 -- Create organization_responsible table
-CREATE TABLE IF NOT EXISTS organization_responsible
-(
-    id              SERIAL PRIMARY KEY,
-    organization_id INT REFERENCES organization (id) ON DELETE CASCADE,
-    user_id         INT REFERENCES employee (id) ON DELETE CASCADE
-);
-
--- Create tenders table
 CREATE TABLE IF NOT EXISTS tenders
 (
     id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name         VARCHAR(255) NOT NULL,
     description  VARCHAR(1000),
     status       VARCHAR(50)  NOT NULL,
+    organization_id VARCHAR(100) NOT NULL,
     service_type VARCHAR(50)  NOT NULL,
-    version      INT          NOT NULL,
+    version      INT          NOT NULL DEFAULT 1,
     created_at   TIMESTAMP    NOT NULL,
     updated_at   TIMESTAMP    NOT NULL
+);
+
+-- Create tenders table
+CREATE TABLE IF NOT EXISTS organization_responsible
+(
+    id              SERIAL PRIMARY KEY,
+    organization_id INT REFERENCES organization (id) ON DELETE CASCADE,
+    user_id         INT REFERENCES employee (id) ON DELETE CASCADE
 );
