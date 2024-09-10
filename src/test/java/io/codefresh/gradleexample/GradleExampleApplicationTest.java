@@ -1,19 +1,19 @@
 package io.codefresh.gradleexample;
 
-import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class GradleExampleApplicationTest {
 
 	@Test
 	public void contextLoads() {
-		assertEquals("Expected correct message","Hello World","Hello "+"World");
+		Assertions.
+				assertEquals("Hello World", "Hello "+"World", "Expected correct message");
 	}
-
 }
