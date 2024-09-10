@@ -1,34 +1,15 @@
-#stage 1
-#Start with a base image containing Java runtime
-FROM openjdk:17-slim as build
+FROM gradle:8.9-jdk17 AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle build --no-daemon
 
-# Add Maintainer Info
-LABEL maintainer="Vladimir Semkin <vnsemkin@gmail.com>"
+FROM openjdk:8-jre-slim
 
-# The application's jar file
-ARG JAR_FILE=./build/libs/*.jar
+EXPOSE 8080
 
-# Add the application's jar to the container
-COPY ${JAR_FILE} app.jar
+RUN mkdir /app
 
-#unpackage jar file
-RUN mkdir -p target/dependency && (cd target/dependency; jar -xf /app.jar)
-
-#stage 2
-#Same Java runtime
-FROM openjdk:17-slim
-
-#Add volume pointing to /tmp
-VOLUME /tmp
-
-#Copy unpackaged application to new container
-ARG DEPENDENCY=/target/dependency
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
-
-#execute the application
-#ENTRYPOINT ["java","-cp","app:app/lib/*","org/vnsemkin/semkinmiddleservice/SemkinMiddleServiceApplication"]
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/spring-boot-application.jar
 
 ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-Djava.security.egd=file:/dev/./urandom","-jar","/app/spring-boot-application.jar"]
 
