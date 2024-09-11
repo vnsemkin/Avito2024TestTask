@@ -93,5 +93,14 @@ public class AppController {
         Tender tender = tenderService.changeTenderStatus(tenderChangeStatusReq);
         return ResponseEntity.ok().body(TenderMapper.toTenderChangeStatusResp(tender));
     }
+
+    @PatchMapping("/tenders/{tenderId}/edit")
+    public ResponseEntity<?> editTender(@PathVariable("tenderId") String tenderId,
+                                        @RequestParam String username,
+                                        @RequestBody TenderEditReq request) {
+        TenderEditFullReq tenderEditFullReq = new TenderEditFullReq(tenderId, username, request);
+
+        return ResponseEntity.ok().body(TenderMapper.toTenderDto(tenderService.editTender(tenderEditFullReq)));
+    }
 }
 

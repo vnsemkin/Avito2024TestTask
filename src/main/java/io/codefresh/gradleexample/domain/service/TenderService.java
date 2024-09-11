@@ -81,6 +81,22 @@ public class TenderService {
         return tenderRepository.save(tender);
     }
 
+    public Tender editTender(TenderEditFullReq tenderEditFullReq) {
+        Tender tender = checkEmployeeRights(tenderEditFullReq.username(), tenderEditFullReq.tenderId());
+        if (tenderEditFullReq.request().name() != null) {
+            tender.setName(tenderEditFullReq.request().name());
+        }
+        if (tenderEditFullReq.request().description() != null) {
+            tender.setDescription(tenderEditFullReq.request().description());
+        }
+        if (tenderEditFullReq.request().serviceType() != null) {
+            tender.setServiceType(tenderEditFullReq.request().serviceType());
+        }
+        tender.setVersion(tender.getVersion() + 1);
+        return tenderRepository.save(tender);
+    }
+
+
     private Tender checkEmployeeRights(String username, String tenderId) {
         Employee employee = employeeRepository.findByUsername(username)
                 .orElseThrow(() ->
