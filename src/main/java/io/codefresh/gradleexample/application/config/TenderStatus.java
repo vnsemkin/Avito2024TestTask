@@ -6,9 +6,9 @@ import java.util.Arrays;
 
 @Getter
 public enum TenderStatus {
-    CREATED("CREATED"),
-    PUBLISHED("PUBLISHED"),
-    CLOSED("CLOSED");
+    CREATED("Created"),
+    PUBLISHED("Published"),
+    CLOSED("Closed");
 
     private final String value;
 

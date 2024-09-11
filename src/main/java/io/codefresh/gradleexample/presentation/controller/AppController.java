@@ -1,10 +1,7 @@
 package io.codefresh.gradleexample.presentation.controller;
 
 import io.codefresh.gradleexample.application.config.TenderServiceType;
-import io.codefresh.gradleexample.application.dtos.TenderCreateRequest;
-import io.codefresh.gradleexample.application.dtos.TenderReq;
-import io.codefresh.gradleexample.application.dtos.TenderReqByUserName;
-import io.codefresh.gradleexample.application.dtos.TenderStatusReq;
+import io.codefresh.gradleexample.application.dtos.*;
 import io.codefresh.gradleexample.application.mappers.TenderMapper;
 import io.codefresh.gradleexample.domain.service.TenderService;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
@@ -59,7 +56,7 @@ public class AppController {
 
     @PostMapping("/tenders/new")
     public ResponseEntity<?> createTender(@RequestBody TenderCreateRequest request) {
-            return ResponseEntity.ok(TenderMapper.toTenderCreateResponse(tenderService.createTender(request)));
+        return ResponseEntity.ok(TenderMapper.toTenderCreateResponse(tenderService.createTender(request)));
     }
 
     @GetMapping("/tenders/my")
@@ -84,6 +81,17 @@ public class AppController {
 
         TenderStatusReq tenderStatusReq = new TenderStatusReq(tenderId, username);
         return ResponseEntity.ok().body(tenderService.getTenderStatus(tenderStatusReq));
+    }
+
+    @PutMapping("/tenders/{tenderId}/status")
+    public ResponseEntity<?> changeTenderStatus(
+            @PathVariable("tenderId") String tenderId,
+            @RequestParam String status,
+            @RequestParam String username) {
+
+        TenderChangeStatusReq tenderChangeStatusReq = new TenderChangeStatusReq(tenderId, status, username);
+        Tender tender = tenderService.changeTenderStatus(tenderChangeStatusReq);
+        return ResponseEntity.ok().body(TenderMapper.toTenderChangeStatusResp(tender));
     }
 }
 

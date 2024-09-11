@@ -1,5 +1,6 @@
 package io.codefresh.gradleexample.application.mappers;
 
+import io.codefresh.gradleexample.application.dtos.TenderChangeStatusResp;
 import io.codefresh.gradleexample.application.dtos.TenderCreateRequest;
 import io.codefresh.gradleexample.application.dtos.TenderCreateResponse;
 import io.codefresh.gradleexample.application.dtos.TenderDto;
@@ -47,6 +48,19 @@ public class TenderMapper {
 
     public static TenderCreateResponse toTenderCreateResponse(Tender tender) {
         return new TenderCreateResponse(
+                tender.getId().toString(),
+                tender.getName(),
+                tender.getDescription(),
+                tender.getServiceType(),
+                tender.getStatus(),
+                tender.getOrganizationId().toString(),
+                tender.getVersion(),
+                tender.getCreatedAt()
+        );
+    }
+
+    public static TenderChangeStatusResp toTenderChangeStatusResp(Tender tender) {
+        return new TenderChangeStatusResp(
                 tender.getId().toString(),
                 tender.getName(),
                 tender.getDescription(),

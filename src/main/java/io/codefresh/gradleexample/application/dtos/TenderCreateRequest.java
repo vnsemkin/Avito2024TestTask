@@ -1,9 +1,8 @@
 package io.codefresh.gradleexample.application.dtos;
 
 import io.codefresh.gradleexample.application.config.TenderServiceType;
+import io.codefresh.gradleexample.application.validators.AppValidator;
 import org.springframework.lang.NonNull;
-
-import java.util.UUID;
 
 
 public record TenderCreateRequest(
@@ -33,20 +32,11 @@ public record TenderCreateRequest(
         if (!TenderServiceType.contains(tenderServiceType)) {
             throw new IllegalArgumentException(INVALID_TENDER_SERVICE_TYPE);
         }
-        if (organizationId.length() > 100 || isUuid(organizationId)) {
+        if (organizationId.length() > 100 || AppValidator.isUuid(organizationId)) {
             throw new IllegalArgumentException(INVALID_ORGANIZATION_ID);
         }
         if (creatorUsername.length() > 100) {
             throw new IllegalArgumentException(INVALID_CREATOR_USERNAME);
-        }
-    }
-
-    private boolean isUuid(String organizationId) {
-        try {
-            UUID.fromString(organizationId);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
         }
     }
 }
