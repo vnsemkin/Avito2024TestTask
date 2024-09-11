@@ -1,4 +1,4 @@
-package io.codefresh.gradleexample.domain.model;
+package io.codefresh.gradleexample.application.dtos;
 
 import org.springframework.lang.NonNull;
 

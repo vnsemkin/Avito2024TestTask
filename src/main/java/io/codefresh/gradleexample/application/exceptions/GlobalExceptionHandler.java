@@ -22,4 +22,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleUserNotMemberOfOrganization(UserNotMemberOfOrganizationException e) {
         return ResponseEntity.status(HttpStatusCode.valueOf(403)).body(e.getMessage());
     }
+
+    @ExceptionHandler(TenderNotFoundException.class)
+    public ResponseEntity<?> handleTenderNotFoundException(TenderNotFoundException e) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(e.getMessage());
+    }
 }

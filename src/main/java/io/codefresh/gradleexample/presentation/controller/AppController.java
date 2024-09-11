@@ -2,9 +2,10 @@ package io.codefresh.gradleexample.presentation.controller;
 
 import io.codefresh.gradleexample.application.config.TenderServiceType;
 import io.codefresh.gradleexample.application.dtos.TenderCreateRequest;
+import io.codefresh.gradleexample.application.dtos.TenderReq;
+import io.codefresh.gradleexample.application.dtos.TenderReqByUserName;
+import io.codefresh.gradleexample.application.dtos.TenderStatusReq;
 import io.codefresh.gradleexample.application.mappers.TenderMapper;
-import io.codefresh.gradleexample.domain.model.TenderReq;
-import io.codefresh.gradleexample.domain.model.TenderReqByUserName;
 import io.codefresh.gradleexample.domain.service.TenderService;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,15 @@ public class AppController {
         List<Tender> tenders = tenderService.getTendersByUsername(tenderReqByUserName);
 
         return ResponseEntity.ok(TenderMapper.toTenderDtoList(tenders));
+    }
+
+    @GetMapping("/tenders/{tenderId}/status")
+    public ResponseEntity<?> getTenderStatus(
+            @PathVariable("tenderId") String tenderId,
+            @RequestParam String username) {
+
+        TenderStatusReq tenderStatusReq = new TenderStatusReq(tenderId, username);
+        return ResponseEntity.ok().body(tenderService.getTenderStatus(tenderStatusReq));
     }
 }
 
