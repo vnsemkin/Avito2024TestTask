@@ -4,6 +4,7 @@ import io.codefresh.gradleexample.application.config.TenderServiceType;
 import io.codefresh.gradleexample.application.dtos.TenderCreateRequest;
 import io.codefresh.gradleexample.application.mappers.TenderMapper;
 import io.codefresh.gradleexample.domain.model.TenderReq;
+import io.codefresh.gradleexample.domain.model.TenderReqByUserName;
 import io.codefresh.gradleexample.domain.service.TenderService;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,21 @@ public class AppController {
     @PostMapping("/tenders/new")
     public ResponseEntity<?> createTender(@RequestBody TenderCreateRequest request) {
             return ResponseEntity.ok(TenderMapper.toTenderCreateResponse(tenderService.createTender(request)));
+    }
+
+    @GetMapping("/tenders/my")
+    public ResponseEntity<?> getMyTenders(
+            @RequestParam(defaultValue = DEFAULT_LIMIT) int limit,
+            @RequestParam(defaultValue = DEFAULT_OFFSET) int offset,
+            @RequestParam String username) {
+
+        limit = Math.min(limit, 50);
+
+        TenderReqByUserName tenderReqByUserName =
+                new TenderReqByUserName(limit, offset, username, SORT_FIELD, SORT_DIRECTION);
+        List<Tender> tenders = tenderService.getTendersByUsername(tenderReqByUserName);
+
+        return ResponseEntity.ok(TenderMapper.toTenderDtoList(tenders));
     }
 }
 

@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS tenders
     name         VARCHAR(255) NOT NULL,
     description  VARCHAR(1000),
     status       VARCHAR(50)  NOT NULL,
+    employee_id  UUID NOT NULL ,
     organization_id UUID NOT NULL,
     service_type VARCHAR(50)  NOT NULL,
     version      INT          NOT NULL DEFAULT 1,

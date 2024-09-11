@@ -14,4 +14,6 @@ public interface TenderJpaRepository extends JpaRepository<Tender, UUID> {
 
     @Query("SELECT t FROM Tender t WHERE t.serviceType IN (:serviceTypes)")
     Page<Tender> findAllByServiceTypes(@Param("serviceTypes") List<String> serviceTypes, Pageable pageable);
+
+    Page<Tender> findAllByEmployeeId(UUID id,  Pageable pageable);
 }

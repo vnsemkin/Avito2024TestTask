@@ -25,6 +25,9 @@ public class Tender {
     @Column(nullable = false)
     private String status;
 
+    @Column(name = "employee_id", nullable = false)
+    private UUID employeeId;
+
     @Column(name = "organization_id", nullable = false)
     private UUID organizationId;
 

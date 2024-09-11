@@ -8,6 +8,7 @@ import io.codefresh.gradleexample.application.mappers.TenderMapper;
 import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
 import io.codefresh.gradleexample.application.repositories.TenderRepository;
 import io.codefresh.gradleexample.domain.model.TenderReq;
+import io.codefresh.gradleexample.domain.model.TenderReqByUserName;
 import io.codefresh.gradleexample.infrastructure.entity.Employee;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
 import lombok.RequiredArgsConstructor;
@@ -53,5 +54,16 @@ public class TenderService {
         Tender newTender = TenderMapper.toTender(request, request.organizationId(), TenderStatus.CREATED.getValue());
 
         return tenderRepository.save(newTender);
+    }
+
+    public List<Tender> getTendersByUsername(TenderReqByUserName tenderReq) {
+        Sort sort = Sort.by(Sort.Direction.fromString(tenderReq.sortDirection()), tenderReq.sortField());
+        PageRequest pageRequest =
+                PageRequest.of(tenderReq.offset() / tenderReq.limit(), tenderReq.limit(), sort);
+
+        Employee employee = employeeRepository.findByUsername(tenderReq.username())
+                .orElseThrow(() -> new UserNotFoundException(String.format(USERNAME_NOT_FOUND, tenderReq.username())));
+
+        return tenderRepository.findAllByEmployeeId(employee.getId(), pageRequest).getContent();
     }
 }
