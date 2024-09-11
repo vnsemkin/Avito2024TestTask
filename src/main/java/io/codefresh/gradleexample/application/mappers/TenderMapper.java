@@ -15,7 +15,7 @@ public class TenderMapper {
                 tender.getDescription(),
                 tender.getServiceType(),
                 tender.getStatus(),
-                tender.getOrganizationId(),
+                tender.getOrganizationId().toString(),
                 tender.getVersion(),
                 tender.getCreatedAt()
         );

@@ -1,6 +1,7 @@
 package io.codefresh.gradleexample.presentation.controller;
 
 import io.codefresh.gradleexample.application.config.TenderServiceType;
+import io.codefresh.gradleexample.application.dtos.TenderCreateRequest;
 import io.codefresh.gradleexample.application.mappers.TenderMapper;
 import io.codefresh.gradleexample.domain.model.TenderReq;
 import io.codefresh.gradleexample.domain.service.TenderService;
@@ -8,10 +9,7 @@ import io.codefresh.gradleexample.infrastructure.entity.Tender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,6 +22,8 @@ public class AppController {
     private static final String SORT_FIELD = "name";
     private static final String SORT_DIRECTION = "ASC";
     private static final String WRONG_SERVICE_TYPE = "Некорректные значения service_type";
+    private static final String SERVER_NOT_READY = "Server not ready";
+    private static final String SERVER_ERROR = "Server error";
     private static final int LIMIT_FIFTY = 50;
     private final TenderService tenderService;
 
@@ -32,7 +32,7 @@ public class AppController {
         try {
             return ResponseEntity.ok("ok");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Server not ready");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(SERVER_NOT_READY);
         }
     }
 
@@ -54,6 +54,17 @@ public class AppController {
         List<Tender> tenders = tenderService.getTenders(tenderReq);
         return tenders == null ? ResponseEntity.noContent().build() :
                 ResponseEntity.ok(TenderMapper.toTenderDtoList(tenders));
+    }
+
+    @PostMapping("/tenders/new")
+    public ResponseEntity<?> createTender(@RequestBody TenderCreateRequest request) {
+        try {
+            Tender tender = tenderService.createTender(request);
+            System.out.println(request);
+            return ResponseEntity.ok(TenderMapper.toTenderDto(tender));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(SERVER_ERROR);
+        }
     }
 }
 
