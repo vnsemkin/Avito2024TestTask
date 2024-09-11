@@ -23,7 +23,6 @@ public class AppController {
     private static final String SORT_DIRECTION = "ASC";
     private static final String WRONG_SERVICE_TYPE = "Некорректные значения service_type";
     private static final String SERVER_NOT_READY = "Server not ready";
-    private static final String SERVER_ERROR = "Server error";
     private static final int LIMIT_FIFTY = 50;
     private final TenderService tenderService;
 
@@ -58,13 +57,7 @@ public class AppController {
 
     @PostMapping("/tenders/new")
     public ResponseEntity<?> createTender(@RequestBody TenderCreateRequest request) {
-        try {
-            Tender tender = tenderService.createTender(request);
-            System.out.println(request);
-            return ResponseEntity.ok(TenderMapper.toTenderDto(tender));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(SERVER_ERROR);
-        }
+            return ResponseEntity.ok(TenderMapper.toTenderCreateResponse(tenderService.createTender(request)));
     }
 }
 

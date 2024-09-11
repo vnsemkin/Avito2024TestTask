@@ -17,6 +17,7 @@ public enum TenderServiceType {
     }
 
     public static boolean contains(String value) {
-        return Arrays.stream(TenderServiceType.values()).anyMatch(t -> t.value.equalsIgnoreCase(value));
+        return Arrays.stream(TenderServiceType.values())
+                .anyMatch(t -> t.value.equalsIgnoreCase(value));
     }
 }

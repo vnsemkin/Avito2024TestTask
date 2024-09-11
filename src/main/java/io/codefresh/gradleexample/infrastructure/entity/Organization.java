@@ -19,7 +19,7 @@ public class Organization {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;  // Changed from Long to UUID
+    private UUID id;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
