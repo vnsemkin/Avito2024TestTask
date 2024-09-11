@@ -71,4 +71,24 @@ public class TenderMapper {
                 tender.getCreatedAt()
         );
     }
+
+    /**
+     * Create a new Tender based on an existing one.
+     *
+     * @param existingTender The existing Tender to clone.
+     * @return A new Tender instance with the same values except for the generated fields like ID and timestamps.
+     */
+    public static Tender cloneTender(Tender existingTender) {
+        Tender newTender = new Tender();
+        newTender.setName(existingTender.getName());
+        newTender.setDescription(existingTender.getDescription());
+        newTender.setStatus(existingTender.getStatus());
+        newTender.setEmployeeId(existingTender.getEmployeeId());
+        newTender.setOrganizationId(existingTender.getOrganizationId());
+        newTender.setServiceType(existingTender.getServiceType());
+        newTender.setVersion(existingTender.getVersion());
+        newTender.setCreatedAt(LocalDateTime.now());
+        newTender.setUpdatedAt(LocalDateTime.now());
+        return newTender;
+    }
 }
