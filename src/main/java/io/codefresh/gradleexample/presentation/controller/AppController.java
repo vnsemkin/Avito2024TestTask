@@ -128,5 +128,14 @@ public class AppController {
         List<Bid> bids = bidService.getBidsByTenderId(bidsByTenderIdReq);
         return ResponseEntity.ok(BidMapper.toBidDtoList(bids));
     }
+
+    @PutMapping("/bids/{bidId}/status")
+    public ResponseEntity<BidDto> changeBidStatus(@PathVariable("bidId") String bidId,
+                                                  @RequestParam("status") String status,
+                                                  @RequestParam("username") String username) {
+        BidChangeStatusReq bidChangeStatusReq = new BidChangeStatusReq(bidId, status, username);
+        Bid bid = bidService.changeBidStatus(bidChangeStatusReq);
+        return ResponseEntity.ok(BidMapper.toBidDto(bid));
+    }
 }
 

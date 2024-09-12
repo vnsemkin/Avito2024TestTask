@@ -1,15 +1,15 @@
 package io.codefresh.gradleexample.domain.service;
 
 import io.codefresh.gradleexample.application.config.TenderBidStatus;
-import io.codefresh.gradleexample.application.dtos.BidCreateReq;
-import io.codefresh.gradleexample.application.dtos.BidsByTenderIdReq;
-import io.codefresh.gradleexample.application.dtos.PageRequestByUsername;
-import io.codefresh.gradleexample.application.dtos.ReqByUserName;
+import io.codefresh.gradleexample.application.dtos.*;
 import io.codefresh.gradleexample.application.exceptions.AuthorIdNotMatchWithAuthorTypeException;
+import io.codefresh.gradleexample.application.exceptions.BidNotFoundException;
 import io.codefresh.gradleexample.application.exceptions.TenderNotFoundException;
+import io.codefresh.gradleexample.application.exceptions.UserNotMemberOfOrganizationException;
 import io.codefresh.gradleexample.application.repositories.BidRepository;
 import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
 import io.codefresh.gradleexample.application.repositories.TenderRepository;
+import io.codefresh.gradleexample.application.validators.AppValidator;
 import io.codefresh.gradleexample.domain.util.Checker;
 import io.codefresh.gradleexample.infrastructure.entity.Bid;
 import io.codefresh.gradleexample.infrastructure.entity.Employee;
@@ -29,6 +29,8 @@ public class BidService extends AppService {
     private final BidRepository bidRepository;
     private final TenderRepository tenderRepository;
     private final static String AUTHOR_ID_NOT_MATCH = "AuthorId not match with authorType";
+    private final static String BID_NOT_FOUND = "Bid with id %s not found";
+    private final static String USER_NOT_MEMBER_OF_ORGANIZATION = "User not member of organization";
 
     public BidService(Checker checker, BidRepository bidRepository,
                       EmployeeRepository employeeRepository, TenderRepository tenderRepository) {
@@ -64,7 +66,7 @@ public class BidService extends AppService {
 
 
     public List<Bid> getBidsByTenderId(BidsByTenderIdReq bidsByTenderIdReq) {
-        UUID uuid = UUID.fromString(bidsByTenderIdReq.tenderId());
+        UUID tenderId = UUID.fromString(bidsByTenderIdReq.tenderId());
         PageRequestByUsername pageRequest = getPageRequestIfUserExist(new ReqByUserName(bidsByTenderIdReq.limit(),
                 bidsByTenderIdReq.offset(),
                 bidsByTenderIdReq.username(),
@@ -73,11 +75,11 @@ public class BidService extends AppService {
         ));
 
         Page<Bid> bids =
-                bidRepository.findAllByTenderId(uuid, pageRequest.page());
+                bidRepository.findAllByTenderId(tenderId, pageRequest.page());
 
         Employee employee = pageRequest.employee();
-        UUID organizationId = tenderRepository.findById(uuid).orElseThrow(() ->
-                new TenderNotFoundException(String.format("Tender %s not found", uuid))).getOrganizationId();
+        UUID organizationId = tenderRepository.findById(tenderId).orElseThrow(() ->
+                new TenderNotFoundException(String.format("Tender %s not found", tenderId))).getOrganizationId();
 
         Predicate<Bid> author = bid -> bid.getAuthorId().equals(pageRequest.employee().getId());
         Predicate<Bid> memberOfOrganization = bid ->
@@ -87,5 +89,19 @@ public class BidService extends AppService {
                 .filter(author.or(memberOfOrganization))
                 .collect(Collectors.toList());
     }
-}
 
+    public Bid changeBidStatus(BidChangeStatusReq bidChangeStatusReq) {
+        UUID bidId = UUID.fromString(bidChangeStatusReq.bidId());
+        Employee employeeIfExist = checker.getEmployeeIfExist(bidChangeStatusReq.username());
+        AppValidator appValidator = new AppValidator(tenderRepository);
+        Bid bid = bidRepository.findById(bidId).orElseThrow(() ->
+                new BidNotFoundException(String.format(BID_NOT_FOUND, bidId)));
+        if (appValidator.isUserAuthorOrMemberOfOrganization(employeeIfExist, bid)) {
+            bid.setStatus(bidChangeStatusReq.status());
+            bid.setUpdatedAt(LocalDateTime.now());
+            bid.setVersion(bid.getVersion() + 1);
+            return bidRepository.save(bid);
+        }
+        throw new UserNotMemberOfOrganizationException(USER_NOT_MEMBER_OF_ORGANIZATION);
+    }
+}
