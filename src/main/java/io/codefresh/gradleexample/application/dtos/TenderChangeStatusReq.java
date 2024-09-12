@@ -1,6 +1,6 @@
 package io.codefresh.gradleexample.application.dtos;
 
-import io.codefresh.gradleexample.application.config.TenderStatus;
+import io.codefresh.gradleexample.application.config.TenderBidStatus;
 import io.codefresh.gradleexample.application.validators.AppValidator;
 import org.springframework.lang.NonNull;
 
@@ -21,10 +21,10 @@ public record TenderChangeStatusReq(
         if (username.length() > 50) {
             throw new IllegalArgumentException(INVALID_USERNAME);
         }
-        if (!TenderStatus.contains(status)) {
+        if (!TenderBidStatus.contains(status)) {
             throw new IllegalArgumentException(String.format(INVALID_STATUS,
-                    Arrays.stream(TenderStatus.values())
-                            .map(TenderStatus::getValue).toList()));
+                    Arrays.stream(TenderBidStatus.values())
+                            .map(TenderBidStatus::getValue).toList()));
         }
     }
 }

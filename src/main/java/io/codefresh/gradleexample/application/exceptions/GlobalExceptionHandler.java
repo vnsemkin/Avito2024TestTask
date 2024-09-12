@@ -27,4 +27,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleTenderNotFoundException(TenderNotFoundException e) {
         return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(e.getMessage());
     }
+
+    @ExceptionHandler(AuthorIdNotMatchWithAuthorTypeException.class)
+    public ResponseEntity<?> handleAuthorIdNotMatchWithAuthorTypeException(AuthorIdNotMatchWithAuthorTypeException e) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(e.getMessage());
+    }
 }

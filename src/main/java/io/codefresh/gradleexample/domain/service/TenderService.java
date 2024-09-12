@@ -1,16 +1,16 @@
 package io.codefresh.gradleexample.domain.service;
 
-import io.codefresh.gradleexample.application.config.TenderStatus;
+import io.codefresh.gradleexample.application.config.PageRequestByUsername;
+import io.codefresh.gradleexample.application.config.TenderBidStatus;
 import io.codefresh.gradleexample.application.dtos.*;
-import io.codefresh.gradleexample.application.exceptions.TenderNotFoundException;
 import io.codefresh.gradleexample.application.exceptions.UserNotFoundException;
 import io.codefresh.gradleexample.application.exceptions.UserNotMemberOfOrganizationException;
 import io.codefresh.gradleexample.application.mappers.TenderMapper;
 import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
 import io.codefresh.gradleexample.application.repositories.TenderRepository;
+import io.codefresh.gradleexample.domain.util.Checker;
 import io.codefresh.gradleexample.infrastructure.entity.Employee;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -19,15 +19,21 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
-public class TenderService {
+public class TenderService extends AppService {
+    private final Checker checker;
     private final static String STATUS_PUBLISHED = "Published";
     private final static String USERNAME_NOT_FOUND = "User with username %s not found";
-    private final static String TENDER_NOT_FOUND = "Tender with tenderId %s not found";
     private final static String USER_NOT_MEMBER_OF_ORGANIZATION =
             "User with username %s is not a member of organization %s";
     private final TenderRepository tenderRepository;
     private final EmployeeRepository employeeRepository;
+
+    public TenderService(Checker checker, TenderRepository tenderRepository, EmployeeRepository employeeRepository) {
+        super(employeeRepository);
+        this.checker = checker;
+        this.tenderRepository = tenderRepository;
+        this.employeeRepository = employeeRepository;
+    }
 
     public List<Tender> getTenders(TenderReq tenderReq) {
         Sort sort = Sort.by(Sort.Direction.fromString(tenderReq.sortDirection()), tenderReq.sortField());
@@ -53,36 +59,31 @@ public class TenderService {
                         new UserNotMemberOfOrganizationException(String.format(USER_NOT_MEMBER_OF_ORGANIZATION,
                                 request.creatorUsername(), request.organizationId())));
 
-        Tender newTender = TenderMapper.toTender(request, request.organizationId(), TenderStatus.CREATED.getValue());
+        Tender newTender = TenderMapper.toTender(request, request.organizationId(), TenderBidStatus.CREATED.getValue());
 
         return tenderRepository.save(newTender);
     }
 
-    public List<Tender> getTendersByUsername(TenderReqByUserName tenderReq) {
-        Sort sort = Sort.by(Sort.Direction.fromString(tenderReq.sortDirection()), tenderReq.sortField());
-        PageRequest pageRequest =
-                PageRequest.of(tenderReq.offset() / tenderReq.limit(), tenderReq.limit(), sort);
-
-        Employee employee = employeeRepository.findByUsername(tenderReq.username())
-                .orElseThrow(() -> new UserNotFoundException(String.format(USERNAME_NOT_FOUND, tenderReq.username())));
-
-        return tenderRepository.findAllByEmployeeId(employee.getId(), pageRequest).getContent();
+    public List<Tender> getTendersByUsername(ReqByUserName tenderReq) {
+        PageRequestByUsername pageRequest = getPageRequest(tenderReq);
+        return tenderRepository.findAllByEmployeeId(pageRequest.employee().getId(),
+                pageRequest.page()).getContent();
     }
 
     public String getTenderStatus(TenderStatusReq tenderStatusReq) {
-        Tender tender = checkEmployeeRights(tenderStatusReq.username(), tenderStatusReq.tenderId());
+        Tender tender = checker.checkEmployeeRights(tenderStatusReq.username(), tenderStatusReq.tenderId());
         return tender.getStatus();
     }
 
     public Tender changeTenderStatus(TenderChangeStatusReq tenderChangeStatusReq) {
-        Tender tender = checkEmployeeRights(tenderChangeStatusReq.username(), tenderChangeStatusReq.tenderId());
+        Tender tender = checker.checkEmployeeRights(tenderChangeStatusReq.username(), tenderChangeStatusReq.tenderId());
         tender.setStatus(tenderChangeStatusReq.status());
         tender.setVersion(tender.getVersion() + 1);
         return tenderRepository.save(tender);
     }
 
     public Tender editTender(TenderEditFullReq tenderEditFullReq) {
-        Tender tender = checkEmployeeRights(tenderEditFullReq.username(), tenderEditFullReq.tenderId());
+        Tender tender = checker.checkEmployeeRights(tenderEditFullReq.username(), tenderEditFullReq.tenderId());
         if (tenderEditFullReq.request().name() != null) {
             tender.setName(tenderEditFullReq.request().name());
         }
@@ -94,20 +95,5 @@ public class TenderService {
         }
         tender.setVersion(tender.getVersion() + 1);
         return tenderRepository.save(tender);
-    }
-
-
-    private Tender checkEmployeeRights(String username, String tenderId) {
-        Employee employee = employeeRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UserNotFoundException(String.format(USERNAME_NOT_FOUND, username)));
-        Tender tender = tenderRepository.findById(UUID.fromString(tenderId))
-                .orElseThrow(() ->
-                        new TenderNotFoundException(String.format(TENDER_NOT_FOUND, tenderId)));
-        if (employee.getOrganizations().stream().noneMatch(org -> org.getId().equals(tender.getOrganizationId()))) {
-            throw new UserNotMemberOfOrganizationException(String.format(USER_NOT_MEMBER_OF_ORGANIZATION,
-                    username, tender.getOrganizationId()));
-        }
-        return tender;
     }
 }

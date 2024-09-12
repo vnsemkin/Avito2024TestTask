@@ -5,18 +5,18 @@ import lombok.Getter;
 import java.util.Arrays;
 
 @Getter
-public enum TenderStatus {
+public enum TenderBidStatus {
     CREATED("Created"),
     PUBLISHED("Published"),
     CLOSED("Closed");
 
     private final String value;
 
-    TenderStatus(String value) {
+    TenderBidStatus(String value) {
         this.value = value;
     }
 
     public static boolean contains(String value) {
-        return Arrays.stream(TenderStatus.values()).anyMatch(t -> t.value.equalsIgnoreCase(value));
+        return Arrays.stream(TenderBidStatus.values()).anyMatch(t -> t.value.equalsIgnoreCase(value));
     }
 }
