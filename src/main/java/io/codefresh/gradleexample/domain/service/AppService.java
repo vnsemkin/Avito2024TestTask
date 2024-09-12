@@ -1,6 +1,6 @@
 package io.codefresh.gradleexample.domain.service;
 
-import io.codefresh.gradleexample.application.config.PageRequestByUsername;
+import io.codefresh.gradleexample.application.dtos.PageRequestByUsername;
 import io.codefresh.gradleexample.application.dtos.ReqByUserName;
 import io.codefresh.gradleexample.application.exceptions.UserNotFoundException;
 import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
@@ -16,7 +16,7 @@ public class AppService {
     private final static String USERNAME_NOT_FOUND = "User with username %s not found";
     private final EmployeeRepository employeeRepository;
 
-    public PageRequestByUsername getPageRequest(ReqByUserName reqByUserName) {
+    public PageRequestByUsername getPageRequestIfUserExist(ReqByUserName reqByUserName) {
         Sort sort = Sort.by(Sort.Direction.fromString(reqByUserName.sortDirection()), reqByUserName.sortField());
         PageRequest pageRequest =
                 PageRequest.of(reqByUserName.offset() / reqByUserName.limit(), reqByUserName.limit(), sort);

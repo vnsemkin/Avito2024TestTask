@@ -1,6 +1,6 @@
 package io.codefresh.gradleexample.domain.service;
 
-import io.codefresh.gradleexample.application.config.PageRequestByUsername;
+import io.codefresh.gradleexample.application.dtos.PageRequestByUsername;
 import io.codefresh.gradleexample.application.config.TenderBidStatus;
 import io.codefresh.gradleexample.application.dtos.*;
 import io.codefresh.gradleexample.application.exceptions.UserNotFoundException;
@@ -65,7 +65,7 @@ public class TenderService extends AppService {
     }
 
     public List<Tender> getTendersByUsername(ReqByUserName tenderReq) {
-        PageRequestByUsername pageRequest = getPageRequest(tenderReq);
+        PageRequestByUsername pageRequest = getPageRequestIfUserExist(tenderReq);
         return tenderRepository.findAllByEmployeeId(pageRequest.employee().getId(),
                 pageRequest.page()).getContent();
     }

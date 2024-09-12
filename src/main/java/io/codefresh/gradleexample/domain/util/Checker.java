@@ -40,4 +40,10 @@ public class Checker {
         return authorType.equals("Organization") ? tender.getOrganizationId().equals(UUID.fromString(authorId)) :
                 tender.getEmployeeId().equals(UUID.fromString(authorId));
     }
+
+    public Employee getEmployeeIfExist(String username) {
+        return employeeRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UserNotFoundException(String.format(USERNAME_NOT_FOUND, username)));
+    }
 }

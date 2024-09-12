@@ -1,4 +1,4 @@
-package io.codefresh.gradleexample.application.config;
+package io.codefresh.gradleexample.application.dtos;
 
 import io.codefresh.gradleexample.infrastructure.entity.Employee;
 import org.springframework.data.domain.Pageable;

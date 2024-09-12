@@ -114,5 +114,19 @@ public class AppController {
         List<Bid> bids = bidService.getBidsByUsername(bidRequestByUserName);
         return ResponseEntity.ok(BidMapper.toBidDtoList(bids));
     }
+
+    @GetMapping("/bids/{tenderId}/list")
+    public ResponseEntity<List<BidDto>> getBidsByTenderId(
+            @PathVariable("tenderId") String tenderId,
+            @RequestParam String username,
+            @RequestParam(defaultValue = DEFAULT_LIMIT) int limit,
+            @RequestParam(defaultValue = DEFAULT_OFFSET) int offset) {
+        limit = Math.min(limit, 50);
+        BidsByTenderIdReq bidsByTenderIdReq = new BidsByTenderIdReq(limit,
+                offset, tenderId, username, SORT_FIELD, SORT_DIRECTION);
+
+        List<Bid> bids = bidService.getBidsByTenderId(bidsByTenderIdReq);
+        return ResponseEntity.ok(BidMapper.toBidDtoList(bids));
+    }
 }
 
