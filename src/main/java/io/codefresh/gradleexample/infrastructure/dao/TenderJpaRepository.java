@@ -22,5 +22,12 @@ public interface TenderJpaRepository extends JpaRepository<Tender, UUID> {
     @Query("SELECT t FROM Tender t WHERE t.status = :status")
     Page<Tender> findAllWithStatusPublished(@Param("status") String status, Pageable pageRequest);
 
+    @Query("SELECT t FROM Tender t WHERE t.tenderId = :uuid ORDER BY t.version DESC limit 1")
     Optional<Tender> findByTenderId(UUID uuid);
+
+    @Query("SELECT t.version FROM Tender t WHERE t.tenderId = :uuid ORDER BY t.version DESC limit 1")
+    int getLastTenderVersion(UUID uuid);
+
+    @Query("SELECT t FROM Tender t WHERE t.tenderId = :uuid AND t.version = :version")
+    Optional<Tender> findTenderByVersion(UUID uuid, int version);
 }

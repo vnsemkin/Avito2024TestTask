@@ -1,8 +1,8 @@
 package io.codefresh.gradleexample.domain.service;
 
-import io.codefresh.gradleexample.application.dtos.PageRequestByUsername;
 import io.codefresh.gradleexample.application.config.TenderBidStatus;
 import io.codefresh.gradleexample.application.dtos.*;
+import io.codefresh.gradleexample.application.exceptions.TenderNotFoundException;
 import io.codefresh.gradleexample.application.exceptions.UserNotFoundException;
 import io.codefresh.gradleexample.application.exceptions.UserNotMemberOfOrganizationException;
 import io.codefresh.gradleexample.application.mappers.TenderMapper;
@@ -13,6 +13,7 @@ import io.codefresh.gradleexample.infrastructure.entity.Employee;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class TenderService extends AppService {
     private final static String USERNAME_NOT_FOUND = "User with username %s not found";
     private final static String USER_NOT_MEMBER_OF_ORGANIZATION =
             "User with username %s is not a member of organization %s";
+    private final static String TENDER_NOT_FOUND = "Tender with tenderId %s and version %s not found";
     private final TenderRepository tenderRepository;
     private final EmployeeRepository employeeRepository;
 
@@ -35,7 +37,7 @@ public class TenderService extends AppService {
         this.employeeRepository = employeeRepository;
     }
 
-    public List<Tender> getTenders(TenderReq tenderReq) {
+    public List<Tender> getTenders(@NonNull TenderReq tenderReq) {
         Sort sort = Sort.by(Sort.Direction.fromString(tenderReq.sortDirection()), tenderReq.sortField());
         PageRequest pageRequest =
                 PageRequest.of(tenderReq.offset() / tenderReq.limit(), tenderReq.limit(), sort);
@@ -45,7 +47,7 @@ public class TenderService extends AppService {
                         STATUS_PUBLISHED, pageRequest).getContent();
     }
 
-    public Tender createTender(TenderCreateRequest request) {
+    public Tender createTender(@NonNull TenderCreateRequest request) {
 
         Employee creator = employeeRepository.findByUsername(request.creatorUsername())
                 .orElseThrow(() ->
@@ -65,25 +67,25 @@ public class TenderService extends AppService {
         return tenderRepository.save(newTender);
     }
 
-    public List<Tender> getTendersByUsername(ReqByUserName tenderReq) {
+    public List<Tender> getTendersByUsername(@NonNull ReqByUserName tenderReq) {
         PageRequestByUsername pageRequest = getPageRequestIfUserExist(tenderReq);
         return tenderRepository.findAllByEmployeeId(pageRequest.employee().getId(),
                 pageRequest.page()).getContent();
     }
 
-    public String getTenderStatus(TenderStatusReq tenderStatusReq) {
+    public String getTenderStatus(@NonNull TenderStatusReq tenderStatusReq) {
         Tender tender = checker.checkEmployeeRights(tenderStatusReq.username(), tenderStatusReq.tenderId());
         return tender.getStatus();
     }
 
-    public Tender changeTenderStatus(TenderChangeStatusReq tenderChangeStatusReq) {
+    public Tender changeTenderStatus(@NonNull TenderChangeStatusReq tenderChangeStatusReq) {
         Tender tender = checker.checkEmployeeRights(tenderChangeStatusReq.username(), tenderChangeStatusReq.tenderId());
         tender.setStatus(tenderChangeStatusReq.status());
         tender.setVersion(tender.getVersion() + 1);
         return tenderRepository.save(tender);
     }
 
-    public Tender editTender(TenderEditFullReq tenderEditFullReq) {
+    public Tender editTender(@NonNull TenderEditFullReq tenderEditFullReq) {
         Tender tender = checker.checkEmployeeRights(tenderEditFullReq.username(), tenderEditFullReq.tenderId());
         if (tenderEditFullReq.request().name() != null) {
             tender.setName(tenderEditFullReq.request().name());
@@ -95,6 +97,18 @@ public class TenderService extends AppService {
             tender.setServiceType(tenderEditFullReq.request().serviceType());
         }
         tender.setVersion(tender.getVersion() + 1);
+        return tenderRepository.save(TenderMapper.cloneTender(tender));
+    }
+
+    public Tender rollbackTender(@NonNull TenderRollbackReq tenderRollbackReq) {
+        Employee employeeIfExist = checker.getEmployeeIfExist(tenderRollbackReq.username());
+        Tender tender = tenderRepository.findTenderByVersion(UUID.fromString(tenderRollbackReq.tenderId()),
+                        tenderRollbackReq.version())
+                .orElseThrow(() -> new TenderNotFoundException(String.format(TENDER_NOT_FOUND,
+                        tenderRollbackReq.tenderId(), tenderRollbackReq.version())));
+        checker.isUserMemberOfOrganization(tender, employeeIfExist);
+        int lastTenderVersion = tenderRepository.getLastTenderVersion(UUID.fromString(tenderRollbackReq.tenderId()));
+        tender.setVersion(lastTenderVersion + 1);
         return tenderRepository.save(tender);
     }
 }

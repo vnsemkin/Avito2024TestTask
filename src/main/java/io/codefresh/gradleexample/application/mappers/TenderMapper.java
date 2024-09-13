@@ -83,6 +83,7 @@ public class TenderMapper {
      */
     public static Tender cloneTender(Tender existingTender) {
         Tender newTender = new Tender();
+        newTender.setTenderId(existingTender.getTenderId());
         newTender.setName(existingTender.getName());
         newTender.setDescription(existingTender.getDescription());
         newTender.setStatus(existingTender.getStatus());
@@ -90,7 +91,7 @@ public class TenderMapper {
         newTender.setOrganizationId(existingTender.getOrganizationId());
         newTender.setServiceType(existingTender.getServiceType());
         newTender.setVersion(existingTender.getVersion());
-        newTender.setCreatedAt(LocalDateTime.now());
+        newTender.setCreatedAt(existingTender.getCreatedAt());
         newTender.setUpdatedAt(LocalDateTime.now());
         return newTender;
     }

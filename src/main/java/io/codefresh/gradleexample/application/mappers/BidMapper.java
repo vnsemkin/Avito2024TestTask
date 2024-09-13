@@ -44,4 +44,19 @@ public class BidMapper {
         bid.setUpdatedAt(LocalDateTime.now());
         return bid;
     }
+
+    public static Bid cloneBid(Bid existingBid) {
+        Bid newBid = new Bid();
+        newBid.setBidId(existingBid.getBidId());
+        newBid.setName(existingBid.getName());
+        newBid.setDescription(existingBid.getDescription());
+        newBid.setStatus(existingBid.getStatus());
+        newBid.setTenderId(existingBid.getTenderId());
+        newBid.setAuthorType(existingBid.getAuthorType());
+        newBid.setAuthorId(existingBid.getAuthorId());
+        newBid.setVersion(existingBid.getVersion());
+        newBid.setCreatedAt(existingBid.getCreatedAt());
+        newBid.setUpdatedAt(LocalDateTime.now());
+        return newBid;
+    }
 }

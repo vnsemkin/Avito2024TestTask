@@ -23,16 +23,11 @@ public class Checker {
     private final EmployeeRepository employeeRepository;
 
     public Tender checkEmployeeRights(String username, String tenderId) {
-        Employee employee = employeeRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UserNotFoundException(String.format(USERNAME_NOT_FOUND, username)));
+        Employee employee = getEmployeeIfExist(username);
         Tender tender = tenderRepository.findByTenderId(UUID.fromString(tenderId))
                 .orElseThrow(() ->
                         new TenderNotFoundException(String.format(TENDER_NOT_FOUND, tenderId)));
-        if (employee.getOrganizations().stream().noneMatch(org -> org.getId().equals(tender.getOrganizationId()))) {
-            throw new UserNotMemberOfOrganizationException(String.format(USER_NOT_MEMBER_OF_ORGANIZATION,
-                    username, tender.getOrganizationId()));
-        }
+        isUserMemberOfOrganization(tender, employee);
         return tender;
     }
 
@@ -45,5 +40,12 @@ public class Checker {
         return employeeRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new UserNotFoundException(String.format(USERNAME_NOT_FOUND, username)));
+    }
+
+    public void isUserMemberOfOrganization(Tender tender, Employee employee) {
+        if (employee.getOrganizations().stream().noneMatch(org -> org.getId().equals(tender.getOrganizationId()))) {
+            throw new UserNotMemberOfOrganizationException(String.format(USER_NOT_MEMBER_OF_ORGANIZATION,
+                    employee.getUsername(), tender.getOrganizationId()));
+        }
     }
 }

@@ -98,6 +98,15 @@ public class AppController {
         return ResponseEntity.ok().body(TenderMapper.toTenderDto(tenderService.editTender(tenderEditFullReq)));
     }
 
+    @PutMapping("/tenders/{tenderId}/rollback/{version}")
+    public ResponseEntity<TenderDto> rollbackTender(@PathVariable("tenderId") String tenderId,
+                                                    @PathVariable("version") int version,
+                                                    @RequestParam String username) {
+        TenderRollbackReq tenderRollbackReq = new TenderRollbackReq(tenderId, version, username);
+        return ResponseEntity.ok().body(TenderMapper.toTenderDto(tenderService.rollbackTender(tenderRollbackReq)));
+    }
+
+
     @PostMapping("/bids/new")
     public ResponseEntity<BidDto> createBid(@RequestBody BidCreateReq bidCreateReq) {
         return ResponseEntity.ok(BidMapper.toBidDto(bidService.createBid(bidCreateReq)));
