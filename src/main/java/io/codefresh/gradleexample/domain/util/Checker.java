@@ -26,7 +26,7 @@ public class Checker {
         Employee employee = employeeRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new UserNotFoundException(String.format(USERNAME_NOT_FOUND, username)));
-        Tender tender = tenderRepository.findById(UUID.fromString(tenderId))
+        Tender tender = tenderRepository.findByTenderId(UUID.fromString(tenderId))
                 .orElseThrow(() ->
                         new TenderNotFoundException(String.format(TENDER_NOT_FOUND, tenderId)));
         if (employee.getOrganizations().stream().noneMatch(org -> org.getId().equals(tender.getOrganizationId()))) {

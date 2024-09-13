@@ -1,11 +1,11 @@
 package io.codefresh.gradleexample.domain.service;
 
-import io.codefresh.gradleexample.application.config.TenderBidStatus;
 import io.codefresh.gradleexample.application.dtos.*;
 import io.codefresh.gradleexample.application.exceptions.AuthorIdNotMatchWithAuthorTypeException;
 import io.codefresh.gradleexample.application.exceptions.BidNotFoundException;
 import io.codefresh.gradleexample.application.exceptions.TenderNotFoundException;
 import io.codefresh.gradleexample.application.exceptions.UserNotMemberOfOrganizationException;
+import io.codefresh.gradleexample.application.mappers.BidMapper;
 import io.codefresh.gradleexample.application.repositories.BidRepository;
 import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
 import io.codefresh.gradleexample.application.repositories.TenderRepository;
@@ -46,16 +46,7 @@ public class BidService extends AppService {
             throw new AuthorIdNotMatchWithAuthorTypeException(AUTHOR_ID_NOT_MATCH);
         }
 
-        Bid bid = new Bid();
-        bid.setName(request.name());
-        bid.setDescription(request.description());
-        bid.setStatus(TenderBidStatus.CREATED.getValue());
-        bid.setTenderId(UUID.fromString(request.tenderId()));
-        bid.setAuthorType(request.authorType());
-        bid.setAuthorId(UUID.fromString(request.authorId()));
-        bid.setVersion(1);
-        bid.setCreatedAt(LocalDateTime.now());
-        bid.setUpdatedAt(LocalDateTime.now());
+        Bid bid = BidMapper.createBid(request);
         return bidRepository.save(bid);
     }
 
@@ -78,7 +69,7 @@ public class BidService extends AppService {
                 bidRepository.findAllByTenderId(tenderId, pageRequest.page());
 
         Employee employee = pageRequest.employee();
-        UUID organizationId = tenderRepository.findById(tenderId).orElseThrow(() ->
+        UUID organizationId = tenderRepository.findByTenderId(tenderId).orElseThrow(() ->
                 new TenderNotFoundException(String.format("Tender %s not found", tenderId))).getOrganizationId();
 
         Predicate<Bid> author = bid -> bid.getAuthorId().equals(pageRequest.employee().getId());
@@ -94,7 +85,7 @@ public class BidService extends AppService {
         UUID bidId = UUID.fromString(bidChangeStatusReq.bidId());
         Employee employeeIfExist = checker.getEmployeeIfExist(bidChangeStatusReq.username());
         AppValidator appValidator = new AppValidator(tenderRepository);
-        Bid bid = bidRepository.findById(bidId).orElseThrow(() ->
+        Bid bid = bidRepository.findByBidId(bidId).orElseThrow(() ->
                 new BidNotFoundException(String.format(BID_NOT_FOUND, bidId)));
         if (appValidator.isUserAuthorOrMemberOfOrganization(employeeIfExist, bid)) {
             bid.setStatus(bidChangeStatusReq.status());

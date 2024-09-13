@@ -32,7 +32,7 @@ public record TenderCreateRequest(
         if (!TenderServiceType.contains(tenderServiceType)) {
             throw new IllegalArgumentException(INVALID_TENDER_SERVICE_TYPE);
         }
-        if (organizationId.length() > 100 || AppValidator.isUuid(organizationId)) {
+        if (organizationId.length() > 100 || !AppValidator.isUuid(organizationId)) {
             throw new IllegalArgumentException(INVALID_ORGANIZATION_ID);
         }
         if (creatorUsername.length() > 100) {

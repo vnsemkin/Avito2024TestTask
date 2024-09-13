@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface TenderJpaRepository extends JpaRepository<Tender, UUID> {
@@ -20,4 +21,6 @@ public interface TenderJpaRepository extends JpaRepository<Tender, UUID> {
 
     @Query("SELECT t FROM Tender t WHERE t.status = :status")
     Page<Tender> findAllWithStatusPublished(@Param("status") String status, Pageable pageRequest);
+
+    Optional<Tender> findByTenderId(UUID uuid);
 }

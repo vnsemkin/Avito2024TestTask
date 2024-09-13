@@ -17,6 +17,9 @@ public class Bid {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column(name = "bid_id", nullable = false)
+    private UUID bidId;
+
     @Column(nullable = false, length = 100)
     private String name;
 

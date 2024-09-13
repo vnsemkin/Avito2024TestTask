@@ -15,7 +15,7 @@ public class TenderMapper {
 
     public static TenderDto toTenderDto(@NonNull Tender tender) {
         return new TenderDto(
-                tender.getId().toString(),
+                tender.getTenderId().toString(),
                 tender.getName(),
                 tender.getDescription(),
                 tender.getServiceType(),
@@ -31,11 +31,14 @@ public class TenderMapper {
                 .map(TenderMapper::toTenderDto).toList();
     }
 
-    public static Tender toTender(@NonNull TenderCreateRequest request,
-                                  @NonNull String organizationId,
-                                  @NonNull String status) {
+    public static Tender createTender(@NonNull TenderCreateRequest request,
+                                      @NonNull String organizationId,
+                                      @NonNull String status,
+                                      @NonNull UUID employeeId) {
         Tender tender = new Tender();
+        tender.setTenderId(UUID.randomUUID());
         tender.setName(request.tenderName());
+        tender.setEmployeeId(employeeId);
         tender.setDescription(request.tenderDescription());
         tender.setStatus(status);
         tender.setOrganizationId(UUID.fromString(organizationId));
@@ -48,7 +51,7 @@ public class TenderMapper {
 
     public static TenderCreateResponse toTenderCreateResponse(Tender tender) {
         return new TenderCreateResponse(
-                tender.getId().toString(),
+                tender.getTenderId().toString(),
                 tender.getName(),
                 tender.getDescription(),
                 tender.getServiceType(),
@@ -61,7 +64,7 @@ public class TenderMapper {
 
     public static TenderChangeStatusResp toTenderChangeStatusResp(Tender tender) {
         return new TenderChangeStatusResp(
-                tender.getId().toString(),
+                tender.getTenderId().toString(),
                 tender.getName(),
                 tender.getDescription(),
                 tender.getServiceType(),

@@ -16,6 +16,9 @@ public class Tender {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column(name = "tender_id", nullable = false)
+    private UUID tenderId;
+
     @Column(nullable = false)
     private String name;
 

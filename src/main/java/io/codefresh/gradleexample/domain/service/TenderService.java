@@ -59,7 +59,8 @@ public class TenderService extends AppService {
                         new UserNotMemberOfOrganizationException(String.format(USER_NOT_MEMBER_OF_ORGANIZATION,
                                 request.creatorUsername(), request.organizationId())));
 
-        Tender newTender = TenderMapper.toTender(request, request.organizationId(), TenderBidStatus.CREATED.getValue());
+        Tender newTender = TenderMapper.createTender(request,
+                request.organizationId(), TenderBidStatus.CREATED.getValue(), creator.getId());
 
         return tenderRepository.save(newTender);
     }

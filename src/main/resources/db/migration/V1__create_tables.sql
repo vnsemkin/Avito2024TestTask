@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS organization
 CREATE TABLE IF NOT EXISTS tenders
 (
     id              UUID PRIMARY KEY      DEFAULT uuid_generate_v4(),
+    tender_id       UUID NOT NULL ,
     name            VARCHAR(255) NOT NULL,
     description     VARCHAR(1000),
     status          VARCHAR(50)  NOT NULL,
@@ -53,6 +54,7 @@ CREATE TABLE IF NOT EXISTS organization_responsible
 CREATE TABLE IF NOT EXISTS bids
 (
     id          UUID PRIMARY KEY      DEFAULT uuid_generate_v4(),
+    bid_id      UUID NOT NULL ,
     name        VARCHAR(100) NOT NULL,
     description VARCHAR(500),
     status      VARCHAR(50)  NOT NULL CHECK (status IN ('Created', 'Published', 'Canceled')),
