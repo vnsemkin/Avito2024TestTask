@@ -7,6 +7,7 @@ import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
 import io.codefresh.gradleexample.application.repositories.TenderRepository;
 import io.codefresh.gradleexample.infrastructure.entity.Employee;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ public class Checker {
     private final TenderRepository tenderRepository;
     private final EmployeeRepository employeeRepository;
 
-    public Tender checkEmployeeRights(String username, String tenderId) {
+    public Tender checkEmployeeRights(@NonNull String username,@NonNull String tenderId) {
         Employee employee = getEmployeeIfExist(username);
         Tender tender = tenderRepository.findByTenderId(UUID.fromString(tenderId))
                 .orElseThrow(() ->
@@ -31,18 +32,20 @@ public class Checker {
         return tender;
     }
 
-    public boolean isBidAuthorIdBelongToAuthorType(String authorType, String authorId, Tender tender) {
+    public boolean isBidAuthorIdBelongToAuthorType(@NonNull String authorType,
+                                                   @NonNull String authorId,
+                                                   @NonNull Tender tender) {
         return authorType.equals("Organization") ? tender.getOrganizationId().equals(UUID.fromString(authorId)) :
                 tender.getEmployeeId().equals(UUID.fromString(authorId));
     }
 
-    public Employee getEmployeeIfExist(String username) {
+    public Employee getEmployeeIfExist(@NonNull String username) {
         return employeeRepository.findByUsername(username)
                 .orElseThrow(() ->
                         new UserNotFoundException(String.format(USERNAME_NOT_FOUND, username)));
     }
 
-    public void isUserMemberOfOrganization(Tender tender, Employee employee) {
+    public void isUserMemberOfOrganization(@NonNull Tender tender, @NonNull Employee employee) {
         if (employee.getOrganizations().stream().noneMatch(org -> org.getId().equals(tender.getOrganizationId()))) {
             throw new UserNotMemberOfOrganizationException(String.format(USER_NOT_MEMBER_OF_ORGANIZATION,
                     employee.getUsername(), tender.getOrganizationId()));

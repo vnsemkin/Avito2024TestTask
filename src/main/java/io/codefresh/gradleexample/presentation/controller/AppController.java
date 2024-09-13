@@ -138,6 +138,13 @@ public class AppController {
         return ResponseEntity.ok(BidMapper.toBidDtoList(bids));
     }
 
+    @GetMapping("/bids/{bidId}/status")
+    public ResponseEntity<BidStatusResp> getBidStatus(@PathVariable("bidId") String bidId,
+                                                      @RequestParam String username) {
+        BidStatusReq bidStatusReq = new BidStatusReq(bidId, username);
+        return ResponseEntity.ok().body(bidService.getBidStatus(bidStatusReq));
+    }
+
     @PutMapping("/bids/{bidId}/status")
     public ResponseEntity<BidDto> changeBidStatus(@PathVariable("bidId") String bidId,
                                                   @RequestParam("status") String status,
@@ -145,6 +152,14 @@ public class AppController {
         BidChangeStatusReq bidChangeStatusReq = new BidChangeStatusReq(bidId, status, username);
         Bid bid = bidService.changeBidStatus(bidChangeStatusReq);
         return ResponseEntity.ok(BidMapper.toBidDto(bid));
+    }
+
+    @PatchMapping("/bids/{bidId}/edit")
+    public ResponseEntity<BidDto> editBid(@PathVariable("bidId") String bidId,
+                                          @RequestParam String username,
+                                          @RequestBody BidEditReq request) {
+        BidFullEditReq bidEditFullReq = new BidFullEditReq(bidId, username, request.name(), request.description());
+        return ResponseEntity.ok(BidMapper.toBidDto(bidService.editBid(bidEditFullReq)));
     }
 }
 

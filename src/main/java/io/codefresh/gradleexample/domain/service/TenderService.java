@@ -96,7 +96,6 @@ public class TenderService extends AppService {
         if (tenderEditFullReq.request().serviceType() != null) {
             tender.setServiceType(tenderEditFullReq.request().serviceType());
         }
-        tender.setVersion(tender.getVersion() + 1);
         return tenderRepository.save(TenderMapper.cloneTender(tender));
     }
 

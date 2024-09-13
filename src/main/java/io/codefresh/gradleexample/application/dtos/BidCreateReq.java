@@ -24,13 +24,13 @@ public record BidCreateReq(
             "Invalid authorId: should not be null and must be a valid UUID";
 
     public BidCreateReq {
-        if (name.length() > 100) {
+        if (name.length() >= 100) {
             throw new IllegalArgumentException(INVALID_BID_NAME);
         }
-        if (description.length() > 500) {
+        if (description.length() >= 500) {
             throw new IllegalArgumentException(INVALID_BID_DESCRIPTION);
         }
-        if (tenderId.length() > 100) {
+        if (!AppValidator.isUuid(tenderId)) {
             throw new IllegalArgumentException(INVALID_TENDER_ID);
         }
         if (!BidAuthor.contains(authorType)) {

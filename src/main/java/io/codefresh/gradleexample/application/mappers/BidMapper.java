@@ -45,7 +45,7 @@ public class BidMapper {
         return bid;
     }
 
-    public static Bid cloneBid(Bid existingBid) {
+    public static Bid cloneBid(@NonNull Bid existingBid) {
         Bid newBid = new Bid();
         newBid.setBidId(existingBid.getBidId());
         newBid.setName(existingBid.getName());
@@ -54,7 +54,7 @@ public class BidMapper {
         newBid.setTenderId(existingBid.getTenderId());
         newBid.setAuthorType(existingBid.getAuthorType());
         newBid.setAuthorId(existingBid.getAuthorId());
-        newBid.setVersion(existingBid.getVersion());
+        newBid.setVersion(existingBid.getVersion() + 1);
         newBid.setCreatedAt(existingBid.getCreatedAt());
         newBid.setUpdatedAt(LocalDateTime.now());
         return newBid;

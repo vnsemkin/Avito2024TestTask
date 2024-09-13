@@ -6,6 +6,7 @@ import io.codefresh.gradleexample.application.exceptions.UserNotFoundException;
 import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
 import io.codefresh.gradleexample.infrastructure.entity.Employee;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ public class AppService {
     private final static String USERNAME_NOT_FOUND = "User with username %s not found";
     private final EmployeeRepository employeeRepository;
 
-    public PageRequestByUsername getPageRequestIfUserExist(ReqByUserName reqByUserName) {
+    public PageRequestByUsername getPageRequestIfUserExist(@NonNull ReqByUserName reqByUserName) {
         Sort sort = Sort.by(Sort.Direction.fromString(reqByUserName.sortDirection()), reqByUserName.sortField());
         PageRequest pageRequest =
                 PageRequest.of(reqByUserName.offset() / reqByUserName.limit(), reqByUserName.limit(), sort);

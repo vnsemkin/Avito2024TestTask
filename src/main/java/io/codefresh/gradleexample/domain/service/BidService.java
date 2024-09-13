@@ -15,6 +15,7 @@ import io.codefresh.gradleexample.infrastructure.entity.Bid;
 import io.codefresh.gradleexample.infrastructure.entity.Employee;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
 import org.springframework.data.domain.Page;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,7 +41,7 @@ public class BidService extends AppService {
         this.tenderRepository = tenderRepository;
     }
 
-    public Bid createBid(BidCreateReq request) {
+    public Bid createBid(@NonNull BidCreateReq request) {
         Tender tender = checker.checkEmployeeRights(request.name(), request.tenderId());
         if (!checker.isBidAuthorIdBelongToAuthorType(request.authorType(), request.authorId(), tender)) {
             throw new AuthorIdNotMatchWithAuthorTypeException(AUTHOR_ID_NOT_MATCH);
@@ -50,13 +51,13 @@ public class BidService extends AppService {
         return bidRepository.save(bid);
     }
 
-    public List<Bid> getBidsByUsername(ReqByUserName tenderReq) {
+    public List<Bid> getBidsByUsername(@NonNull ReqByUserName tenderReq) {
         PageRequestByUsername pageRequest = getPageRequestIfUserExist(tenderReq);
         return bidRepository.findAllByAuthorId(pageRequest.employee().getId(), pageRequest.page()).getContent();
     }
 
 
-    public List<Bid> getBidsByTenderId(BidsByTenderIdReq bidsByTenderIdReq) {
+    public List<Bid> getBidsByTenderId(@NonNull BidsByTenderIdReq bidsByTenderIdReq) {
         UUID tenderId = UUID.fromString(bidsByTenderIdReq.tenderId());
         PageRequestByUsername pageRequest = getPageRequestIfUserExist(new ReqByUserName(bidsByTenderIdReq.limit(),
                 bidsByTenderIdReq.offset(),
@@ -81,7 +82,7 @@ public class BidService extends AppService {
                 .collect(Collectors.toList());
     }
 
-    public Bid changeBidStatus(BidChangeStatusReq bidChangeStatusReq) {
+    public Bid changeBidStatus(@NonNull BidChangeStatusReq bidChangeStatusReq) {
         UUID bidId = UUID.fromString(bidChangeStatusReq.bidId());
         Employee employeeIfExist = checker.getEmployeeIfExist(bidChangeStatusReq.username());
         AppValidator appValidator = new AppValidator(tenderRepository);
@@ -94,5 +95,31 @@ public class BidService extends AppService {
             return bidRepository.save(bid);
         }
         throw new UserNotMemberOfOrganizationException(USER_NOT_MEMBER_OF_ORGANIZATION);
+    }
+
+    public BidStatusResp getBidStatus(@NonNull BidStatusReq bidStatusReq) {
+        Bid bid = checkUserExistAndMemberOfOrganization(bidStatusReq.username(), bidStatusReq.bidId());
+        return new BidStatusResp(bid.getStatus());
+    }
+
+    public Bid editBid(@NonNull BidFullEditReq bidEditFullReq) {
+        Bid bid = checkUserExistAndMemberOfOrganization(bidEditFullReq.username(), bidEditFullReq.bidId());
+        if(bidEditFullReq.name() != null) {
+            bid.setName(bidEditFullReq.name());
+        }
+        if(bidEditFullReq.description() != null) {
+            bid.setDescription(bidEditFullReq.description());
+        }
+        return bidRepository.save(BidMapper.cloneBid(bid));
+    }
+
+    private Bid checkUserExistAndMemberOfOrganization(@NonNull String username,@NonNull String bidId) {
+        Employee employeeIfExist = checker.getEmployeeIfExist(username);
+        Bid bid = bidRepository.findByBidId(UUID.fromString(bidId)).orElseThrow(() -> new BidNotFoundException(
+                String.format(BID_NOT_FOUND, bidId)));
+        Tender tender = tenderRepository.findByTenderId(bid.getTenderId()).orElseThrow(() -> new TenderNotFoundException(
+                String.format("Tender %s not found", bid.getTenderId())));
+        checker.isUserMemberOfOrganization(tender, employeeIfExist);
+        return bid;
     }
 }
