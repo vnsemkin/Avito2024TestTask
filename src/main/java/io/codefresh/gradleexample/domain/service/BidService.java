@@ -17,6 +17,7 @@ import io.codefresh.gradleexample.infrastructure.entity.Tender;
 import org.springframework.data.domain.Page;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,6 +42,7 @@ public class BidService extends AppService {
         this.tenderRepository = tenderRepository;
     }
 
+    @Transactional
     public Bid createBid(@NonNull BidCreateReq request) {
         Tender tender = checker.checkEmployeeRights(request.name(), request.tenderId());
         if (!checker.isBidAuthorIdBelongToAuthorType(request.authorType(), request.authorId(), tender)) {
@@ -51,12 +53,13 @@ public class BidService extends AppService {
         return bidRepository.save(bid);
     }
 
+    @Transactional
     public List<Bid> getBidsByUsername(@NonNull ReqByUserName tenderReq) {
         PageRequestByUsername pageRequest = getPageRequestIfUserExist(tenderReq);
         return bidRepository.findAllByAuthorId(pageRequest.employee().getId(), pageRequest.page()).getContent();
     }
 
-
+    @Transactional
     public List<Bid> getBidsByTenderId(@NonNull BidsByTenderIdReq bidsByTenderIdReq) {
         UUID tenderId = UUID.fromString(bidsByTenderIdReq.tenderId());
         PageRequestByUsername pageRequest = getPageRequestIfUserExist(new ReqByUserName(bidsByTenderIdReq.limit(),
@@ -82,6 +85,7 @@ public class BidService extends AppService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public Bid changeBidStatus(@NonNull BidChangeStatusReq bidChangeStatusReq) {
         UUID bidId = UUID.fromString(bidChangeStatusReq.bidId());
         Employee employeeIfExist = checker.getEmployeeIfExist(bidChangeStatusReq.username());
@@ -102,18 +106,19 @@ public class BidService extends AppService {
         return new BidStatusResp(bid.getStatus());
     }
 
+    @Transactional
     public Bid editBid(@NonNull BidFullEditReq bidEditFullReq) {
         Bid bid = checkUserExistAndMemberOfOrganization(bidEditFullReq.username(), bidEditFullReq.bidId());
-        if(bidEditFullReq.name() != null) {
+        if (bidEditFullReq.name() != null) {
             bid.setName(bidEditFullReq.name());
         }
-        if(bidEditFullReq.description() != null) {
+        if (bidEditFullReq.description() != null) {
             bid.setDescription(bidEditFullReq.description());
         }
         return bidRepository.save(BidMapper.cloneBid(bid));
     }
 
-    private Bid checkUserExistAndMemberOfOrganization(@NonNull String username,@NonNull String bidId) {
+    private Bid checkUserExistAndMemberOfOrganization(@NonNull String username, @NonNull String bidId) {
         Employee employeeIfExist = checker.getEmployeeIfExist(username);
         Bid bid = bidRepository.findByBidId(UUID.fromString(bidId)).orElseThrow(() -> new BidNotFoundException(
                 String.format(BID_NOT_FOUND, bidId)));

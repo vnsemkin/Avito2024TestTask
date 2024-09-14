@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +48,7 @@ public class TenderService extends AppService {
                         STATUS_PUBLISHED, pageRequest).getContent();
     }
 
+    @Transactional
     public Tender createTender(@NonNull TenderCreateRequest request) {
 
         Employee creator = employeeRepository.findByUsername(request.creatorUsername())
@@ -67,17 +69,20 @@ public class TenderService extends AppService {
         return tenderRepository.save(newTender);
     }
 
+    @Transactional
     public List<Tender> getTendersByUsername(@NonNull ReqByUserName tenderReq) {
         PageRequestByUsername pageRequest = getPageRequestIfUserExist(tenderReq);
         return tenderRepository.findAllByEmployeeId(pageRequest.employee().getId(),
                 pageRequest.page()).getContent();
     }
 
+    @Transactional
     public String getTenderStatus(@NonNull TenderStatusReq tenderStatusReq) {
         Tender tender = checker.checkEmployeeRights(tenderStatusReq.username(), tenderStatusReq.tenderId());
         return tender.getStatus();
     }
 
+    @Transactional
     public Tender changeTenderStatus(@NonNull TenderChangeStatusReq tenderChangeStatusReq) {
         Tender tender = checker.checkEmployeeRights(tenderChangeStatusReq.username(), tenderChangeStatusReq.tenderId());
         tender.setStatus(tenderChangeStatusReq.status());
@@ -85,6 +90,7 @@ public class TenderService extends AppService {
         return tenderRepository.save(tender);
     }
 
+    @Transactional
     public Tender editTender(@NonNull TenderEditFullReq tenderEditFullReq) {
         Tender tender = checker.checkEmployeeRights(tenderEditFullReq.username(), tenderEditFullReq.tenderId());
         if (tenderEditFullReq.request().name() != null) {
@@ -99,6 +105,7 @@ public class TenderService extends AppService {
         return tenderRepository.save(TenderMapper.cloneTender(tender));
     }
 
+    @Transactional
     public Tender rollbackTender(@NonNull TenderRollbackReq tenderRollbackReq) {
         Employee employeeIfExist = checker.getEmployeeIfExist(tenderRollbackReq.username());
         Tender tender = tenderRepository.findTenderByVersion(UUID.fromString(tenderRollbackReq.tenderId()),
