@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:latest
-    container_name: postgres_db
+    container_name: postgres
     env_file:
       - .env
     ports:
@@ -11,9 +11,30 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      retries: 5
+
+  app:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    container_name: gradle_example_app
+    depends_on:
+      - postgres
+    networks:
+      - backend
+    environment:
+      POSTGRES_JDBC_URL: jdbc:postgresql://postgres:5432/avito
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres_data:
 
 networks:
   backend:
+

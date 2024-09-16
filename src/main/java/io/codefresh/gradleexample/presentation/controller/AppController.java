@@ -161,5 +161,13 @@ public class AppController {
         BidFullEditReq bidEditFullReq = new BidFullEditReq(bidId, username, request.name(), request.description());
         return ResponseEntity.ok(BidMapper.toBidDto(bidService.editBid(bidEditFullReq)));
     }
+
+    @PutMapping("/bids/{bidId}/submit_decision")
+    public ResponseEntity<BidDto> submitDecision(@PathVariable("bidId") String bidId,
+                                                 @RequestParam("decision") String decision,
+                                                 @RequestParam String username) {
+        BidSubmitDecisionReq bidSubmitDecisionReq = new BidSubmitDecisionReq(bidId, decision, username);
+        return ResponseEntity.ok(BidMapper.toBidDto(bidService.submitDecision(bidSubmitDecisionReq)));
+    }
 }
 

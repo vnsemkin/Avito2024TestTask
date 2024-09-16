@@ -1,17 +1,16 @@
 package io.codefresh.gradleexample.domain.service;
 
 import io.codefresh.gradleexample.application.dtos.*;
-import io.codefresh.gradleexample.application.exceptions.AuthorIdNotMatchWithAuthorTypeException;
-import io.codefresh.gradleexample.application.exceptions.BidNotFoundException;
-import io.codefresh.gradleexample.application.exceptions.TenderNotFoundException;
-import io.codefresh.gradleexample.application.exceptions.UserNotMemberOfOrganizationException;
+import io.codefresh.gradleexample.application.exceptions.*;
 import io.codefresh.gradleexample.application.mappers.BidMapper;
+import io.codefresh.gradleexample.application.repositories.BidDecisionRepository;
 import io.codefresh.gradleexample.application.repositories.BidRepository;
 import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
 import io.codefresh.gradleexample.application.repositories.TenderRepository;
 import io.codefresh.gradleexample.application.validators.AppValidator;
 import io.codefresh.gradleexample.domain.util.Checker;
 import io.codefresh.gradleexample.infrastructure.entity.Bid;
+import io.codefresh.gradleexample.infrastructure.entity.BidDecision;
 import io.codefresh.gradleexample.infrastructure.entity.Employee;
 import io.codefresh.gradleexample.infrastructure.entity.Tender;
 import org.springframework.data.domain.Page;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,16 +29,22 @@ import java.util.stream.Collectors;
 public class BidService extends AppService {
     private final Checker checker;
     private final BidRepository bidRepository;
+    private final BidDecisionRepository bidDecisionRepository;
     private final TenderRepository tenderRepository;
     private final static String AUTHOR_ID_NOT_MATCH = "AuthorId not match with authorType";
     private final static String BID_NOT_FOUND = "Bid with id %s not found";
     private final static String USER_NOT_MEMBER_OF_ORGANIZATION = "User not member of organization";
+    private final static String USER_ALREADY_SUBMITTED_DECISION = "User already submitted decision";
 
-    public BidService(Checker checker, BidRepository bidRepository,
-                      EmployeeRepository employeeRepository, TenderRepository tenderRepository) {
+    public BidService(Checker checker,
+                      BidRepository bidRepository,
+                      EmployeeRepository employeeRepository,
+                      BidDecisionRepository bidDecisionRepository,
+                      TenderRepository tenderRepository) {
         super(employeeRepository);
         this.checker = checker;
         this.bidRepository = bidRepository;
+        this.bidDecisionRepository = bidDecisionRepository;
         this.tenderRepository = tenderRepository;
     }
 
@@ -127,4 +133,24 @@ public class BidService extends AppService {
         checker.isUserMemberOfOrganization(tender, employeeIfExist);
         return bid;
     }
+
+    @Transactional
+    public Bid submitDecision(BidSubmitDecisionReq bidSubmitDecisionReq){
+        Bid bid = checkUserExistAndMemberOfOrganization(bidSubmitDecisionReq.username(), bidSubmitDecisionReq.bidId());
+        Employee employee = checker.getEmployeeIfExist(bidSubmitDecisionReq.username());
+        BidDecision bidDecision = new BidDecision();
+        bidDecision.setBidId(bid.getBidId());
+        bidDecision.setAuthorId(employee.getId());
+        bidDecision.setDecision(bidSubmitDecisionReq.decision());
+        Optional<BidDecision> byAuthorId = bidDecisionRepository
+                .findByAuthorId(employee.getId());
+        if(byAuthorId.isPresent()) {
+            throw new UserAlreadySubmittedDecisionException(USER_ALREADY_SUBMITTED_DECISION);
+        }
+        bidDecisionRepository.save(bidDecision);
+        return bidRepository.findByBidId(bid.getBidId())
+                .orElseThrow(() -> new BidNotFoundException("Bid not found"));
+    }
+
+
 }

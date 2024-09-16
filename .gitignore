@@ -36,5 +36,5 @@ HELP.md
 ### VS Code ###
 .vscode/
 .gitignore
-/vnsemkin
+/test_data
 

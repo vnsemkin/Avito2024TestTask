@@ -1,13 +1,12 @@
 # Application
 server:
-  address: ${SERVER_ADDRESS}
-  port: ${SERVER_PORT}
+  port: 8080
   servlet.context-path: /
 
 # Spring
 spring:
   datasource:
-    url: ${POSTGRES_JDBC_URL}
+    url: jdbc:postgresql://postgres:5432/avito
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
 

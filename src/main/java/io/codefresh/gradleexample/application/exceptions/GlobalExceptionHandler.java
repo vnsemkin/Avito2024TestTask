@@ -37,4 +37,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleBidNotFoundException(BidNotFoundException e) {
         return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(REASON + e.getMessage());
     }
+
+    @ExceptionHandler(UserAlreadySubmittedDecisionException.class)
+    public ResponseEntity<?> handleUserAlreadySubmittedDecisionException(UserAlreadySubmittedDecisionException e) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(REASON + e.getMessage());
+    }
 }
