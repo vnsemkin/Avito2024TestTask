@@ -15,7 +15,7 @@ public record BidsByTenderIdReq(int limit, int offset,
         if (username.length() > 50) {
             throw new IllegalArgumentException(INVALID_USERNAME);
         }
-        if(!AppValidator.isUuid(tenderId)) {
+        if (!AppValidator.isUuid(tenderId)) {
             throw new IllegalArgumentException(INVALID_TENDER_ID);
         }
     }

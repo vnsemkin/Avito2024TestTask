@@ -7,7 +7,7 @@ import lombok.NonNull;
 public record BidSubmitDecisionReq(@NonNull String bidId,
                                    @NonNull String decision,
                                    @NonNull String username) {
-    public BidSubmitDecisionReq{
+    public BidSubmitDecisionReq {
         if (!AppValidator.isUuid(bidId)) {
             throw new IllegalArgumentException("Invalid bidId");
         }

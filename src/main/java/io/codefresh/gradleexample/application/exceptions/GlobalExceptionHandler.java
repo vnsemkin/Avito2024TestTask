@@ -33,6 +33,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleAuthorIdNotMatchWithAuthorTypeException(AuthorIdNotMatchWithAuthorTypeException e) {
         return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(REASON + e.getMessage());
     }
+
     @ExceptionHandler(BidNotFoundException.class)
     public ResponseEntity<?> handleBidNotFoundException(BidNotFoundException e) {
         return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(REASON + e.getMessage());

@@ -16,7 +16,7 @@ public interface BidJpaRepository extends JpaRepository<Bid, UUID> {
     @Query("SELECT b FROM Bid b WHERE b.tenderId = :tenderId")
     Page<Bid> findAllByTenderId(@Param("tenderId") UUID id, Pageable pageRequest);
 
-    @Query("SELECT b FROM Bid b WHERE b.bidId = :uuid ORDER BY b.version DESC limit 1" )
+    @Query("SELECT b FROM Bid b WHERE b.bidId = :uuid ORDER BY b.version DESC limit 1")
     Optional<Bid> findByBidId(UUID uuid);
 
     @Query("SELECT b FROM Bid b WHERE b.bidId = :uuid AND b.version = :version")

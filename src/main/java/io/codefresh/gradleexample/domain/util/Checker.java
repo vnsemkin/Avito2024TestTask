@@ -23,7 +23,7 @@ public class Checker {
     private final TenderRepository tenderRepository;
     private final EmployeeRepository employeeRepository;
 
-    public Tender checkEmployeeRights(@NonNull String username,@NonNull String tenderId) {
+    public Tender checkEmployeeRights(@NonNull String username, @NonNull String tenderId) {
         Employee employee = getEmployeeIfExist(username);
         Tender tender = tenderRepository.findByTenderId(UUID.fromString(tenderId))
                 .orElseThrow(() ->

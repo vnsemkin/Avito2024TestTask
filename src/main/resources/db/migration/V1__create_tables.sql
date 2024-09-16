@@ -70,9 +70,9 @@ CREATE TABLE IF NOT EXISTS bids
 CREATE TABLE IF NOT EXISTS bid_decision
 (
     id        UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    bid_id    UUID    NOT NULL,
+    bid_id    UUID        NOT NULL,
     decision  VARCHAR(10) NOT NULL,
-    author_id UUID    NOT NULL
+    author_id UUID        NOT NULL
 );
 
 -- Create bid_feedback table with a foreign key referencing bids(id)

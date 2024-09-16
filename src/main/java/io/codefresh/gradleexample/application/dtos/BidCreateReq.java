@@ -5,11 +5,11 @@ import io.codefresh.gradleexample.application.validators.AppValidator;
 import org.springframework.lang.NonNull;
 
 public record BidCreateReq(
-       @NonNull String name,
-       @NonNull String description,
-       @NonNull String tenderId,
-       @NonNull String authorType,
-       @NonNull String authorId
+        @NonNull String name,
+        @NonNull String description,
+        @NonNull String tenderId,
+        @NonNull String authorType,
+        @NonNull String authorId
 ) {
 
     private static final String INVALID_BID_NAME =
