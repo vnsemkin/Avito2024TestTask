@@ -35,7 +35,6 @@ HELP.md
 
 ### VS Code ###
 .vscode/
-.gitignore
 /test_data
 
 /build/resolvedMainClassName
