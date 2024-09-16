@@ -42,4 +42,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleUserAlreadySubmittedDecisionException(UserAlreadySubmittedDecisionException e) {
         return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(REASON + e.getMessage());
     }
+
+    @ExceptionHandler(UserAlreadyLeftFeedbackException.class)
+    public ResponseEntity<?> handleUserAlreadyLeftFeedbackException(UserAlreadyLeftFeedbackException e) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(REASON + e.getMessage());
+    }
 }

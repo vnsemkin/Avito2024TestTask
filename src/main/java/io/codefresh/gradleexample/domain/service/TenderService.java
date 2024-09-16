@@ -42,8 +42,9 @@ public class TenderService extends AppService {
         Sort sort = Sort.by(Sort.Direction.fromString(tenderReq.sortDirection()), tenderReq.sortField());
         PageRequest pageRequest =
                 PageRequest.of(tenderReq.offset() / tenderReq.limit(), tenderReq.limit(), sort);
-        return tenderReq.serviceType().isEmpty() ? tenderRepository.findAllWithStatusPublished(STATUS_PUBLISHED,
-                pageRequest).getContent() :
+        List<Tender> published = tenderRepository.findAllWithStatusPublished(STATUS_PUBLISHED,
+                pageRequest).getContent();
+        return tenderReq.serviceType().isEmpty() ? published :
                 tenderRepository.findAllByServiceTypes(tenderReq.serviceType(),
                         STATUS_PUBLISHED, pageRequest).getContent();
     }

@@ -169,5 +169,21 @@ public class AppController {
         BidSubmitDecisionReq bidSubmitDecisionReq = new BidSubmitDecisionReq(bidId, decision, username);
         return ResponseEntity.ok(BidMapper.toBidDto(bidService.submitDecision(bidSubmitDecisionReq)));
     }
+
+    @PutMapping("/bids/{bidId}/feedback")
+    public ResponseEntity<BidDto> submitFeedback(@PathVariable("bidId") String bidId,
+                                                 @RequestParam("bidFeedback") String bidFeedback,
+                                                 @RequestParam String username) {
+        BidSubmitFeedbackReq bidSubmitFeedbackReq = new BidSubmitFeedbackReq(bidId, bidFeedback, username);
+        return ResponseEntity.ok(BidMapper.toBidDto(bidService.submitFeedback(bidSubmitFeedbackReq)));
+    }
+
+    @PutMapping("/bids/{bidId}/rollback/{version}")
+    public ResponseEntity<BidDto> rollbackBid(@PathVariable("bidId") String bidId,
+                                              @PathVariable("version") int version,
+                                              @RequestParam String username) {
+        BidRollbackReq bidRollbackReq = new BidRollbackReq(bidId, version, username);
+        return ResponseEntity.ok(BidMapper.toBidDto(bidService.rollbackBid(bidRollbackReq)));
+    }
 }
 

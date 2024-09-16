@@ -6,7 +6,7 @@ server:
 # Spring
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/avito
+    url: ${POSTGRES_JDBC_URL}
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
 

@@ -3,16 +3,10 @@ package io.codefresh.gradleexample.domain.service;
 import io.codefresh.gradleexample.application.dtos.*;
 import io.codefresh.gradleexample.application.exceptions.*;
 import io.codefresh.gradleexample.application.mappers.BidMapper;
-import io.codefresh.gradleexample.application.repositories.BidDecisionRepository;
-import io.codefresh.gradleexample.application.repositories.BidRepository;
-import io.codefresh.gradleexample.application.repositories.EmployeeRepository;
-import io.codefresh.gradleexample.application.repositories.TenderRepository;
+import io.codefresh.gradleexample.application.repositories.*;
 import io.codefresh.gradleexample.application.validators.AppValidator;
 import io.codefresh.gradleexample.domain.util.Checker;
-import io.codefresh.gradleexample.infrastructure.entity.Bid;
-import io.codefresh.gradleexample.infrastructure.entity.BidDecision;
-import io.codefresh.gradleexample.infrastructure.entity.Employee;
-import io.codefresh.gradleexample.infrastructure.entity.Tender;
+import io.codefresh.gradleexample.infrastructure.entity.*;
 import org.springframework.data.domain.Page;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -30,21 +24,26 @@ public class BidService extends AppService {
     private final Checker checker;
     private final BidRepository bidRepository;
     private final BidDecisionRepository bidDecisionRepository;
+    private final BidFeedbackRepository bidFeedbackRepository;
     private final TenderRepository tenderRepository;
     private final static String AUTHOR_ID_NOT_MATCH = "AuthorId not match with authorType";
     private final static String BID_NOT_FOUND = "Bid with id %s not found";
+    private final static String BID_WITH_VERSION_NOT_FOUND = "Bid with id %s and version %s not found";
     private final static String USER_NOT_MEMBER_OF_ORGANIZATION = "User not member of organization";
     private final static String USER_ALREADY_SUBMITTED_DECISION = "User already submitted decision";
+    private final static String USER_ALREADY_LEFT_FEEDBACK = "User already left feedback";
 
     public BidService(Checker checker,
                       BidRepository bidRepository,
                       EmployeeRepository employeeRepository,
                       BidDecisionRepository bidDecisionRepository,
+                      BidFeedbackRepository bidFeedbackRepository,
                       TenderRepository tenderRepository) {
         super(employeeRepository);
         this.checker = checker;
         this.bidRepository = bidRepository;
         this.bidDecisionRepository = bidDecisionRepository;
+        this.bidFeedbackRepository = bidFeedbackRepository;
         this.tenderRepository = tenderRepository;
     }
 
@@ -135,7 +134,7 @@ public class BidService extends AppService {
     }
 
     @Transactional
-    public Bid submitDecision(BidSubmitDecisionReq bidSubmitDecisionReq){
+    public Bid submitDecision(@NonNull BidSubmitDecisionReq bidSubmitDecisionReq) {
         Bid bid = checkUserExistAndMemberOfOrganization(bidSubmitDecisionReq.username(), bidSubmitDecisionReq.bidId());
         Employee employee = checker.getEmployeeIfExist(bidSubmitDecisionReq.username());
         BidDecision bidDecision = new BidDecision();
@@ -144,7 +143,7 @@ public class BidService extends AppService {
         bidDecision.setDecision(bidSubmitDecisionReq.decision());
         Optional<BidDecision> byAuthorId = bidDecisionRepository
                 .findByAuthorId(employee.getId());
-        if(byAuthorId.isPresent()) {
+        if (byAuthorId.isPresent()) {
             throw new UserAlreadySubmittedDecisionException(USER_ALREADY_SUBMITTED_DECISION);
         }
         bidDecisionRepository.save(bidDecision);
@@ -152,5 +151,35 @@ public class BidService extends AppService {
                 .orElseThrow(() -> new BidNotFoundException("Bid not found"));
     }
 
+    @Transactional
+    public Bid submitFeedback(@NonNull BidSubmitFeedbackReq bidSubmitFeedbackReq) {
+        Bid bid = checkUserExistAndMemberOfOrganization(bidSubmitFeedbackReq.username(),
+                bidSubmitFeedbackReq.bidId());
+        Employee employee = checker.getEmployeeIfExist(bidSubmitFeedbackReq.username());
+        BidFeedback bidFeedback = new BidFeedback();
+        bidFeedback.setBidId(bid.getBidId());
+        bidFeedback.setAuthorId(employee.getId());
+        bidFeedback.setFeedback(bidSubmitFeedbackReq.bidFeedback());
 
+        Optional<BidFeedback> byAuthorId = bidFeedbackRepository.findByAuthorId(employee.getId());
+        if (byAuthorId.isPresent()) {
+            throw new UserAlreadyLeftFeedbackException(USER_ALREADY_LEFT_FEEDBACK);
+        }
+
+        bidFeedbackRepository.save(bidFeedback);
+        return bidRepository.findByBidId(bid.getBidId())
+                .orElseThrow(() -> new BidNotFoundException("Bid not found"));
+    }
+
+    @Transactional
+    public Bid rollbackBid(@NonNull BidRollbackReq bidRollbackReq) {
+        checkUserExistAndMemberOfOrganization(bidRollbackReq.username(),
+                bidRollbackReq.bidId());
+        Bid bid = bidRepository.findBidByVersion(UUID.fromString(bidRollbackReq.bidId()), bidRollbackReq.version())
+                .orElseThrow(() -> new BidNotFoundException(String.format(BID_WITH_VERSION_NOT_FOUND,
+                        bidRollbackReq.bidId(), bidRollbackReq.version())));
+        int lastTenderVersion = bidRepository.getLastTenderVersion(UUID.fromString(bidRollbackReq.bidId()));
+        bid.setVersion(lastTenderVersion + 1);
+        return bidRepository.save(bid);
+    }
 }
